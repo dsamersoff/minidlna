@@ -244,5 +244,9 @@ extern struct album_art_name_s *album_art_names;
 extern volatile short int quitting;
 extern volatile uint32_t updateID;
 extern const char *force_sort_criteria;
+extern unsigned char *icon_sm_png ;
+extern unsigned char *icon_lrg_png ;
+extern unsigned char *icon_sm_jpg ;
+extern unsigned char *icon_lrg_jpg ;
 
 #endif

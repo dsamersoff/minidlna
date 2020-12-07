@@ -88,3 +88,7 @@ struct album_art_name_s * album_art_names = NULL;
 volatile short int quitting = 0;
 volatile uint32_t updateID = 0;
 const char *force_sort_criteria = NULL;
+unsigned char *icon_sm_png = NULL;
+unsigned char *icon_lrg_png = NULL;
+unsigned char *icon_sm_jpg = NULL;
+unsigned char *icon_lrg_jpg = NULL;

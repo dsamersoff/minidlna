@@ -67,7 +67,10 @@ static const struct {
 	{ MERGE_MEDIA_DIRS, "merge_media_dirs" },
 	{ WIDE_LINKS, "wide_links" },
 	{ TIVO_DISCOVERY, "tivo_discovery" },
-	{ ENABLE_SUBTITLES, "enable_subtitles" },
+	{ ICON_SM_PNG, "icon_sm_png" },
+	{ ICON_LRG_PNG, "icon_lrg_png" },
+	{ ICON_SM_JPG, "icon_sm_jpg" },
+	{ ICON_LRG_JPG, "icon_lrg_jpg" },
 };
 
 int

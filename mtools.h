@@ -37,5 +37,9 @@ static const int mod_table[] = {0, 2, 1};
 char *base64_encode(const char *data,   size_t input_length, size_t *output_length);
 unsigned char *base64_decode(const char *data, size_t input_length,   size_t *output_length );
 
+/* File tools */
+
+unsigned char *file_get_content(const char *filename);
+int content_size(unsigned char *content) ;
 
 #endif

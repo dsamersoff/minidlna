@@ -23,7 +23,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mtools.h>
+#include <malloc.h>
+#include "mtools.h"
 
 
 char *base64_encode(const char *data, size_t input_length,  size_t *output_length) {
@@ -94,3 +95,39 @@ unsigned char *base64_decode(const char *data, size_t input_length,   size_t *ou
     free(decoding_table);
     return decoded_data;
 }
+
+
+unsigned char *file_get_content(const char *filename) {
+	FILE *file;
+	unsigned char *content;
+	unsigned long fileLen;
+
+	//Open file to get it's size and check if existing
+	file = fopen(filename, "rb");
+	if (!file) return NULL ;
+
+
+	//Get file length
+	fseek(file, 0, SEEK_END);
+	fileLen=ftell(file);
+	fseek(file, 0, SEEK_SET);
+
+    // Read file content
+	content =(unsigned char *)malloc(fileLen+1);
+	if (!content) return NULL ;
+
+
+    //Read file contents into buffer
+    fread(content, fileLen, 1, file);
+    content[fileLen] = 0 ;
+    fclose(file);
+
+    return content ;
+}
+
+int content_size(unsigned char *content) {
+
+    return (int)malloc_usable_size (content) ;
+
+}
+

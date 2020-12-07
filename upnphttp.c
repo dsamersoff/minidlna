@@ -82,6 +82,7 @@
 #include "clients.h"
 #include "process.h"
 #include "sendfile.h"
+#include "mtools.h"
 
 #define MAX_BUFFER_SIZE 2147483647
 #define MIN_BUFFER_SIZE 65536
@@ -1407,11 +1408,25 @@ SendResp_icon(struct upnphttp * h, char * icon)
 	int size;
 	struct string_s str;
 
-	if( strcmp(icon, "sm.png") == 0 )
+	if (( strcmp(icon, "sm.png") == 0 ) &&( icon_sm_png != NULL ))
+	{
+		DPRINTF(E_DEBUG, L_HTTP, "Sending small PNG icon (custom)\n");
+		data = (char *)icon_sm_png;
+		size = content_size(icon_sm_png);
+		strcpy(mime+6, "png");
+	}
+	else if( strcmp(icon, "sm.png") == 0 )
 	{
 		DPRINTF(E_DEBUG, L_HTTP, "Sending small PNG icon\n");
 		data = (char *)png_sm;
 		size = sizeof(png_sm)-1;
+		strcpy(mime+6, "png");
+	}
+	else if (( strcmp(icon, "lrg.png") == 0 ) &&( icon_lrg_png != NULL ))
+	{
+		DPRINTF(E_DEBUG, L_HTTP, "Sending large PNG icon (custom)\n");
+		data = (char *)icon_lrg_png;
+		size = content_size(icon_lrg_png);
 		strcpy(mime+6, "png");
 	}
 	else if( strcmp(icon, "lrg.png") == 0 )
@@ -1421,11 +1436,25 @@ SendResp_icon(struct upnphttp * h, char * icon)
 		size = sizeof(png_lrg)-1;
 		strcpy(mime+6, "png");
 	}
+	else if (( strcmp(icon, "sm.jpg") == 0 ) &&( icon_sm_jpg != NULL ))
+	{
+		DPRINTF(E_DEBUG, L_HTTP, "Sending large JPG icon (custom)\n");
+		data = (char *)icon_sm_jpg;
+		size = content_size(icon_sm_jpg);
+		strcpy(mime+6, "jpeg");
+	}
 	else if( strcmp(icon, "sm.jpg") == 0 )
 	{
 		DPRINTF(E_DEBUG, L_HTTP, "Sending small JPEG icon\n");
 		data = (char *)jpeg_sm;
 		size = sizeof(jpeg_sm)-1;
+		strcpy(mime+6, "jpeg");
+	}
+	else if (( strcmp(icon, "lrg.jpg") == 0 ) &&( icon_lrg_jpg != NULL ))
+	{
+		DPRINTF(E_DEBUG, L_HTTP, "Sending large JPG icon (custom)\n");
+		data = (char *)icon_lrg_jpg;
+		size = content_size(icon_lrg_jpg);
 		strcpy(mime+6, "jpeg");
 	}
 	else if( strcmp(icon, "lrg.jpg") == 0 )
