@@ -364,6 +364,48 @@ insert_containers(const char *name, const char *path, const char *refID, const c
 	{
 		static long long last_all_objectID = 0;
 
+        /* handle vido sort by genre */
+        snprintf(sql, sizeof(sql), "SELECT GENRE from DETAILS where ID = %lld", detailID);
+        ret = sql_get_table(db, sql, &result, &row, &cols);
+        if( ret != SQLITE_OK )
+            return;
+        if( !row )
+        {
+            sqlite3_free_table(result);
+            return;
+        }
+        char *genre = result[5];
+        static struct virtual_item last_genre;
+        char *tmpstr;
+        if( genre )
+        {
+            //Genre delimiter handling ; or /
+            char delimiter[3] = "/";
+            if (strstr(genre, ";"))
+                sprintf(delimiter, ";");
+
+            tmpstr = strtok (genre, delimiter);
+
+            while (tmpstr != NULL)
+            {
+                // Handle result
+                if (strstr(tmpstr,"SciFi") || strstr(tmpstr,"Science Fiction")  )
+                 strcpy(last_genre.name, "Sci-Fi");
+                else
+                 strcpy(last_genre.name, tmpstr);
+                trim(last_genre.name);
+                insert_container(last_genre.name, VIDEO_GENRE_ID, NULL, "genre.videoGenre", NULL, NULL, NULL, &objectID, &parentID);
+                sprintf(last_genre.parentID, VIDEO_GENRE_ID"$%"PRIX64, parentID);
+                last_genre.objectID = objectID;
+                sql_exec(db, "INSERT into OBJECTS"
+                         " (OBJECT_ID, PARENT_ID, REF_ID, CLASS, DETAIL_ID, NAME) "
+                         "VALUES"
+                         " ('%s$%"PRIX64"', '%s', '%s', '%s', %"PRId64", %Q)",
+                         last_genre.parentID, last_genre.objectID, last_genre.parentID, refID, class, detailID, name);
+                tmpstr = strtok (NULL, delimiter);
+            }
+        }
+
 		/* All Videos */
 		if( !last_all_objectID )
 		{
@@ -541,6 +583,7 @@ CreateDatabase(void)
 
 	                        VIDEO_ID, "0", _("Video"),
 	                    VIDEO_ALL_ID, VIDEO_ID, _("All Video"),
+	                  VIDEO_GENRE_ID, VIDEO_ID, _("Genre"),
 	                    VIDEO_DIR_ID, VIDEO_ID, _("Folders"),
 
 	                        IMAGE_ID, "0", _("Pictures"),

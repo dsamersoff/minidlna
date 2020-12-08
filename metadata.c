@@ -219,7 +219,9 @@ parse_nfo(const char *path, metadata_t *m)
 		free(esc_tag);
 	}
 
-	val = GetValueFromNameValueList(&xml, "genre");
+	//val = GetValueFromNameValueList(&xml, "genre");
+	// Instead of get only the 1st Value, concat all matching with specified character
+	val = GetMultipleValueFromNameValueList(&xml, "genre", ";");
 	if (val)
 	{
 		char *esc_tag = unescape_tag(val, 1);
