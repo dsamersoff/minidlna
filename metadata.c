@@ -28,6 +28,7 @@
 #include <sys/param.h>
 #include <fcntl.h>
 
+#include <libxml/xmlreader.h>
 #include <libexif/exif-loader.h>
 #include <jpeglib.h>
 #include <setjmp.h>
@@ -156,15 +157,16 @@ check_for_captions(const char *path, int64_t detailID)
 	}
 }
 
+
 static void
 parse_nfo(const char *path, metadata_t *m)
 {
-	FILE *nfo;
-	char *buf;
-	struct NameValueParserData xml;
 	struct stat file;
-	size_t nread;
-	char *val, *val2;
+    xmlTextReaderPtr reader;
+    int ret, type;
+    const xmlChar *name, *value;
+    char * genre = NULL;
+    char * ptr_genre = NULL;
 
 	if (stat(path, &file) != 0 ||
 	    file.st_size > 65535)
@@ -172,83 +174,92 @@ parse_nfo(const char *path, metadata_t *m)
 		DPRINTF(E_INFO, L_METADATA, "Not parsing very large .nfo file %s\n", path);
 		return;
 	}
-	DPRINTF(E_DEBUG, L_METADATA, "Parsing .nfo file: %s\n", path);
-	buf = calloc(1, file.st_size + 1);
-	if (!buf)
-		return;
-	nfo = fopen(path, "r");
-	if (!nfo)
-	{
-		free(buf);
-		return;
-	}
-	nread = fread(buf, 1, file.st_size, nfo);
-	fclose(nfo);
-	
-	ParseNameValue(buf, nread, &xml, 0);
 
-	//printf("\ttype: %s\n", GetValueFromNameValueList(&xml, "rootElement"));
-	val = GetValueFromNameValueList(&xml, "title");
-	if (val)
-	{
-		char *esc_tag, *title;
-		val2 = GetValueFromNameValueList(&xml, "episodetitle");
-		if (val2)
-			xasprintf(&title, "%s - %s", val, val2);
-		else
-			title = strdup(val);
-		esc_tag = unescape_tag(title, 1);
-		m->title = escape_tag(esc_tag, 1);
-		free(esc_tag);
-		free(title);
-	}
+    reader = xmlReaderForFile(path, NULL, 0);
+    if (reader != NULL)
+    {
+        ret = xmlTextReaderRead(reader);
+        while (ret == 1)
+        {
 
-	val = GetValueFromNameValueList(&xml, "plot");
-	if (val)
-	{
-		char *esc_tag = unescape_tag(val, 1);
-		m->comment = escape_tag(esc_tag, 1);
-		free(esc_tag);
-	}
+            type=xmlTextReaderNodeType(reader);
+            if (type == 1) {
+                name = xmlTextReaderConstName(reader);
+                do { // search for text
+                    ret = xmlTextReaderRead(reader);
+                    type=xmlTextReaderNodeType(reader);
+                    value = xmlTextReaderConstValue(reader);
+                } while ((ret == 1) && (type!=1) && (value == NULL)) ;
 
-	val = GetValueFromNameValueList(&xml, "capturedate");
-	if (val)
-	{
-		char *esc_tag = unescape_tag(val, 1);
-		m->date = escape_tag(esc_tag, 1);
-		free(esc_tag);
-	}
+                if (value != NULL) {
+                    if ( strcmp((char *)name , "title") == 0 )
+                    {
+                        char * esc_tag = unescape_tag((char *)value, 1);
+                        m->title = escape_tag(esc_tag, 1);
+                        free(esc_tag);
+                    }
+                    else if ( strcmp((char *)name , "plot") == 0 )
+                    {
+                        char *esc_tag = unescape_tag((char *)value, 1);
+                        m->comment = escape_tag(esc_tag, 1);
+                        free(esc_tag);
+                    }
+                    else if ( strcmp((char *)name , "capturedate") == 0 )
+                    {
+                        char *esc_tag = unescape_tag((char *)value, 1);
+                        m->date = escape_tag(esc_tag, 1);
+                        free(esc_tag);
+                    }
+                    else if ( strcmp((char *)name , "genre") == 0 ){
+                          if (genre == NULL)
+                          {
+                              genre = malloc(strlen((char *)value)+1);
+                              strcpy(genre, (char *)value);
+                          } else {
+                              ptr_genre = realloc(genre, strlen(genre)+strlen((char *)value)+2) ;
+                              genre = ptr_genre ;
+                              strcat(genre, ";");
+                              strcat(genre, (char *)value);
+                          }
+                    }
+                    else if ( strcmp((char *)name , "mime") == 0 )
+                    {
+                        char *esc_tag = unescape_tag((char *)value, 1);
+                        free(m->mime);
+                        m->mime = escape_tag(esc_tag, 1);
+                        free(esc_tag);
+                    }
+                    else if ( strcmp((char *)name , "episode") == 0 )
+                    {
+                        m->disc = atoi((char *)value);
+                    }
+                    else if ( strcmp((char *)name , "mime") == 0 )
+                    {
+                        m->track = atoi((char *)value);
+                    }
+                }
+            } else {
+                ret = xmlTextReaderRead(reader);
+            }
+        }
 
-	//val = GetValueFromNameValueList(&xml, "genre");
-	// Instead of get only the 1st Value, concat all matching with specified character
-	val = GetMultipleValueFromNameValueList(&xml, "genre", ";");
-	if (val)
-	{
-		char *esc_tag = unescape_tag(val, 1);
-		free(m->genre);
-		m->genre = escape_tag(esc_tag, 1);
-		free(esc_tag);
-	}
+        if  (genre != NULL)
+        {
+            char *esc_tag = unescape_tag(genre, 1);
+            free(m->genre);
+            m->genre = escape_tag(esc_tag, 1);
+            free(esc_tag);
+            free(genre);
+        }
 
-	val = GetValueFromNameValueList(&xml, "mime");
-	if (val)
-	{
-		char *esc_tag = unescape_tag(val, 1);
-		free(m->mime);
-		m->mime = escape_tag(esc_tag, 1);
-		free(esc_tag);
-	}
-
-	val = GetValueFromNameValueList(&xml, "season");
-	if (val)
-		m->disc = atoi(val);
-
-	val = GetValueFromNameValueList(&xml, "episode");
-	if (val)
-		m->track = atoi(val);
-
-	ClearNameValueList(&xml);
-	free(buf);
+        xmlFreeTextReader(reader);
+        if (ret != 0)
+        {
+            DPRINTF(E_WARN, L_METADATA, "Parsing file %s failed\n", path);
+        }
+    } else {
+        DPRINTF(E_WARN, L_METADATA, "Unable to open .nfo file %s\n", path);
+    }
 }
 
 void

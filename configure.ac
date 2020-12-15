@@ -221,7 +221,7 @@ for dir in "" /usr/local $INCLUDE_DIR; do
     if test -n "$dir"; then
         CPPFLAGS="$CPPFLAGS -I$dir"
     fi
-    AC_CHECK_HEADERS([jpeglib.h sqlite3.h libexif/exif-loader.h id3tag.h ogg/ogg.h vorbis/codec.h FLAC/metadata.h],,[unset $as_ac_Header; break],)
+    AC_CHECK_HEADERS([jpeglib.h sqlite3.h libexif/exif-loader.h libxml/xmlreader.h id3tag.h ogg/ogg.h vorbis/codec.h FLAC/metadata.h],,[unset $as_ac_Header; break],)
     if test x"$ac_cv_header_jpeglib_h" != x"yes"; then
         CPPFLAGS="$CPPFLAGS_SAVE"
         continue
@@ -229,6 +229,9 @@ for dir in "" /usr/local $INCLUDE_DIR; do
         CPPFLAGS="$CPPFLAGS_SAVE"
         continue
     elif test x"$ac_cv_header_libexif_exif_loader_h" != x"yes"; then
+        CPPFLAGS="$CPPFLAGS_SAVE"
+        continue
+    elif test x"$ac_cv_header_libxml_xmlreader_h" != x"yes"; then
         CPPFLAGS="$CPPFLAGS_SAVE"
         continue
     elif test x"$ac_cv_header_id3tag_h" != x"yes"; then
@@ -250,6 +253,7 @@ done
 test x"$ac_cv_header_jpeglib_h" != x"yes" && AC_MSG_ERROR([libjpeg headers not found or not usable])
 test x"$ac_cv_header_sqlite3_h" != x"yes" && AC_MSG_ERROR([libsqlite3 headers not found or not usable])
 test x"$ac_cv_header_libexif_exif_loader_h" != x"yes" && AC_MSG_ERROR([libexif headers not found or not usable])
+test x"$ac_cv_header_libxml_xmlreader_h" != x"yes" && AC_MSG_ERROR([libxml2 headers not found or not usable])
 test x"$ac_cv_header_id3tag_h" != x"yes" && AC_MSG_ERROR([libid3tag headers not found or not usable])
 test x"$ac_cv_header_ogg_ogg_h" != x"yes" && AC_MSG_ERROR([libogg headers not found or not usable])
 test x"$ac_cv_header_vorbis_codec_h" != x"yes" && AC_MSG_ERROR([libvorbis headers not found or not usable])

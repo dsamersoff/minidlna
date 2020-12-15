@@ -114,35 +114,14 @@ GetValueFromNameValueList(struct NameValueParserData * pdata,
     return p;
 }
 
-char *
-GetMultipleValueFromNameValueList(struct NameValueParserData * pdata,
-                          const char * Name,
-                          const char * separator)
-{
-    struct NameValue * nv;
-    char * p = NULL;
-    for(nv = pdata->head.lh_first;
-        (nv != NULL) ;
-        nv = nv->entries.le_next)
-    {
-        if(strcmp(nv->name, Name) == 0){
-            if (p == NULL) {
-                p = nv->value;
-            } else {
-                strcat(p, separator);
-                strcat(p, nv->value);
-            }
-        }
-    }
-    return p;
-}
-
 /* debug all-in-one function 
  * do parsing then display to stdout */
-#ifdef DEBUG
+//#ifdef DEBUG
 void
 DisplayNameValueList(char * buffer, int bufsize)
 {
+printf("RAW = =====[%s]=====\n", buffer);
+
     struct NameValueParserData pdata;
     struct NameValue * nv;
     ParseNameValue(buffer, bufsize, &pdata, XML_STORE_EMPTY_FL);
@@ -153,6 +132,8 @@ DisplayNameValueList(char * buffer, int bufsize)
         printf("%s = %s\n", nv->name, nv->value);
     }
     ClearNameValueList(&pdata);
+
+
 }
-#endif
+//#endif
 
