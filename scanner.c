@@ -374,14 +374,11 @@ insert_containers(const char *name, const char *path, const char *refID, const c
             sqlite3_free_table(result);
             return;
         }
-        char *genre = result[5];
+        char *genre = result[1];
         static struct virtual_item last_genre;
         char *tmpstr;
         if( genre )
         {
-
-DPRINTF(E_WARN, L_GENERAL, "Parsing genre: %s\n", genre);
-
             //Genre delimiter handling ; or /
             char delimiter[3] = "/";
             if (strstr(genre, ";"))
@@ -398,7 +395,7 @@ DPRINTF(E_WARN, L_GENERAL, "Parsing genre: %s\n", genre);
                  strcpy(last_genre.name, tmpstr);
                 trim(last_genre.name);
                 insert_container(last_genre.name, VIDEO_GENRE_ID, NULL, "genre.videoGenre", NULL, NULL, NULL, &objectID, &parentID);
-DPRINTF(E_WARN, L_GENERAL, "Adding genre: %s\n", last_genre.name);
+
                 sprintf(last_genre.parentID, VIDEO_GENRE_ID"$%"PRIX64, parentID);
                 last_genre.objectID = objectID;
                 sql_exec(db, "INSERT into OBJECTS"

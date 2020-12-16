@@ -710,7 +710,7 @@ GetVideoMetadata(const char *path, const char *name)
 	struct song_metadata video;
 	metadata_t m;
 	uint32_t free_flags = 0xFFFFFFFF;
-	char *path_cpy, *basepath;
+	char *path_cpy, *basepath, *filename;
 
 	memset(&m, '\0', sizeof(m));
 	memset(&video, '\0', sizeof(video));
@@ -1592,18 +1592,21 @@ video_no_dlna:
 		}
 	}
 
+    filename = strdup(name);
+    strip_ext(filename);
+
 	album_art = find_album_art(path, m.thumb_data, m.thumb_size);
 	freetags(&video);
 	lav_close(ctx);
 
 	ret = sql_exec(db, "INSERT into DETAILS"
 	                   " (PATH, SIZE, TIMESTAMP, DURATION, DATE, CHANNELS, BITRATE, SAMPLERATE, RESOLUTION,"
-	                   "  TITLE, CREATOR, ARTIST, GENRE, COMMENT, DLNA_PN, MIME, ALBUM_ART, DISC, TRACK) "
+	                   "  TITLE, FILENAME, CREATOR, ARTIST, GENRE, COMMENT, DLNA_PN, MIME, ALBUM_ART, DISC, TRACK) "
 	                   "VALUES"
-	                   " (%Q, %lld, %lld, %Q, %Q, %u, %u, %u, %Q, '%q', %Q, %Q, %Q, %Q, %Q, '%q', %lld, %u, %u);",
+	                   " (%Q, %lld, %lld, %Q, %Q, %u, %u, %u, %Q, '%q', '%q', %Q, %Q, %Q, %Q, %Q, '%q', %lld, %u, %u);",
 	                   path, (long long)file.st_size, (long long)file.st_mtime, m.duration,
 	                   m.date, m.channels, m.bitrate, m.frequency, m.resolution,
-	                   m.title, m.creator, m.artist, m.genre, m.comment, m.dlna_pn,
+	                   m.title, filename, m.creator, m.artist, m.genre, m.comment, m.dlna_pn,
 	                   m.mime, album_art, m.disc, m.track);
 	if( ret != SQLITE_OK )
 	{
@@ -1616,6 +1619,7 @@ video_no_dlna:
 		check_for_captions(path, ret);
 	}
 	free_metadata(&m, free_flags);
+	free(filename);
 	free(path_cpy);
 
 	return ret;
