@@ -154,7 +154,7 @@ AC_CHECK_HEADER(linux/netlink.h,
 ### Library checks
 
 CPPFLAGS_SAVE="$CPPFLAGS"
-for dir in "" /usr/local $INCLUDE_DIR; do
+for dir in "" $prefix/include /usr/local/include $INCLUDE_DIR; do
     if test -n "$dir"; then
         CPPFLAGS="$CPPFLAGS_SAVE -I$dir"
     fi
@@ -175,7 +175,7 @@ if test -z "$HAVE_LIBAVUTIL"; then
 fi
 
 CPPFLAGS_SAVE="$CPPFLAGS"
-for dir in "" /usr/local $INCLUDE_DIR; do
+for dir in "" $prefix/include /usr/local/include $INCLUDE_DIR; do
     if test -n "$dir"; then
         CPPFLAGS="$CPPFLAGS_SAVE -I$dir"
     fi
@@ -196,7 +196,7 @@ if test -z "$HAVE_LIBAVCODEC"; then
 fi
 
 CPPFLAGS_SAVE="$CPPFLAGS"
-for dir in "" /usr/local $INCLUDE_DIR; do
+for dir in "" $prefix/include /usr/local/include $INCLUDE_DIR; do
     if test -n "$dir"; then
         CPPFLAGS="$CPPFLAGS_SAVE -I$dir"
     fi
@@ -217,7 +217,7 @@ if test -z "$HAVE_LIBAVFORMAT"; then
 fi
 
 CPPFLAGS_SAVE="$CPPFLAGS"
-for dir in "" /usr/local $INCLUDE_DIR; do
+for dir in "" $prefix/include /usr/local/include $INCLUDE_DIR; do
     if test -n "$dir"; then
         CPPFLAGS="$CPPFLAGS -I$dir"
     fi
@@ -389,7 +389,7 @@ AC_COMPILE_IFELSE(
 CFLAGS="$CFLAGS_SAVE"
 
 LDFLAGS_SAVE="$LDFLAGS"
-for dir in "" /usr/local $SEARCH_DIR; do
+for dir in "" $prefix /usr/local $SEARCH_DIR; do
     if test -n "$dir"; then
         LDFLAGS="$LDFLAGS -L$dir/lib"
     fi
@@ -400,7 +400,7 @@ test x"$ac_cv_lib_jpeg_jpeg_set_defaults" = x"yes" || AC_MSG_ERROR([Could not fi
 AC_SUBST(LIBJPEG_LIBS)
 
 LDFLAGS_SAVE="$LDFLAGS"
-for dir in "" /usr/local $SEARCH_DIR; do
+for dir in "" $prefix /usr/local $SEARCH_DIR; do
     if test -n "$dir"; then
         LDFLAGS="$LDFLAGS -L$dir/lib"
     fi
@@ -411,7 +411,7 @@ test x"$ac_cv_lib_jpeg_jpeg_set_defaults" = x"yes" || AC_MSG_ERROR([Could not fi
 AC_SUBST(LIBEXIF_LIBS)
 
 LDFLAGS_SAVE="$LDFLAGS"
-for dir in "" /usr/local $SEARCH_DIR; do
+for dir in "" $prefix /usr/local $SEARCH_DIR; do
     if test -n "$dir"; then
         LDFLAGS="$LDFLAGS -L$dir/lib"
     fi
@@ -422,7 +422,7 @@ test x"$ac_cv_lib_id3tag__lz___id3_file_open" = x"yes" || AC_MSG_ERROR([Could no
 AC_SUBST(LIBID3TAG_LIBS)
 
 LDFLAGS_SAVE="$LDFLAGS"
-for dir in "" /usr/local $SEARCH_DIR; do
+for dir in "" $prefix /usr/local $SEARCH_DIR; do
     if test -n "$dir"; then
         LDFLAGS="$LDFLAGS -L$dir/lib"
     fi
@@ -435,20 +435,20 @@ test x"$ac_cv_lib_sqlite3_sqlite3_open" = x"yes" || AC_MSG_ERROR([Could not find
 AC_SUBST(LIBSQLITE3_LIBS)
 
 LDFLAGS_SAVE="$LDFLAGS"
-for dir in "" /usr/local $SEARCH_DIR; do
+for dir in "" $prefix /usr/local $SEARCH_DIR; do
     if test -n "$dir"; then
+      if test -d "$dir/lib"; then
         LDFLAGS="$LDFLAGS -L$dir/lib"
+      fi  
     fi
-    AC_CHECK_LIB([avformat -lavcodec -lavutil -lz], [avformat_open_input], [LIBAVFORMAT_LIBS="-lavformat -lavcodec -lavutil -lz"],
-		 [AC_CHECK_LIB([avformat -lavcodec -lavutil -lz], [av_open_input_file], [LIBAVFORMAT_LIBS="-lavformat -lavcodec -lavutil -lz"],
-		  [unset ac_cv_lib_avformat_av_open_input_file; unset ac_cv_lib_avformat_avformat_open_input; LDFLAGS="$LDFLAGS_SAVE"; continue])])
-    break
 done
-if test x"$ac_cv_lib_avformat__lavcodec__lavutil__lz___av_open_input_file" != x"yes" &&
-   test x"$ac_cv_lib_avformat__lavcodec__lavutil__lz___avformat_open_input" != x"yes"; then
-   AC_MSG_ERROR([Could not find libavformat - part of ffmpeg])
+
+AC_CHECK_LIB([avformat -lavcodec -lavutil], [avformat_open_input], [LIBAVFORMAT_LIBS="-lavformat -lavcodec -lavutil"])
+if test x"$ac_cv_lib_avformat__lavcodec__lavutil___avformat_open_input" != x"yes" ; then
+  AC_CHECK_LIB([avformat -lavcodec -lavutil] ,[av_open_input_file], [LIBAVFORMAT_LIBS="-lavformat -lavcodec -lavutil"], [AC_MSG_ERROR([Could not find libavformat - part of ffmpeg])])
 fi
 AC_SUBST(LIBAVFORMAT_LIBS)
+
 
 AC_CHECK_LIB(pthread, pthread_create)
 
