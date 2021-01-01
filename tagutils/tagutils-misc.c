@@ -85,6 +85,7 @@ struct {
 	{ "zh_CN",  { "CP936", "CP950", "CP932", "ISO-8859-1", 0 } },
 	{ "zh_TW",  { "CP950", "CP936", "CP932", "ISO-8859-1", 0 } },
 	{ "ko_KR",  { "CP949", "ISO-8859-1", 0 } },
+	{ "ru_RU",  { "WINDOWS-1251", "CP866", "KOI8-R", 0 } },
 	{ 0,        { 0 } }
 };
 static int lang_index = -1;
