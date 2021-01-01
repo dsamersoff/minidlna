@@ -762,6 +762,14 @@ filter_avp(scan_filter *d)
 		);
 }
 
+static int 
+has_nomedia(const char *dir) {
+    // Don't process folders containing .nomedia file. 
+	char full_path[PATH_MAX];
+	snprintf(full_path, PATH_MAX, "%s/.nomedia", dir);
+    return (access (full_path, F_OK) == 0);
+}
+
 static void
 ScanDirectory(const char *dir, const char *parent, media_types dir_types)
 {
@@ -771,6 +779,12 @@ ScanDirectory(const char *dir, const char *parent, media_types dir_types)
 	char *name = NULL;
 	static long long unsigned int fileno = 0;
 	enum file_types type;
+
+    if ( has_nomedia(dir) ) 
+	{
+		DPRINTF(E_WARN, L_SCANNER, "Skipping %s [.nomedia file found]\n", dir);
+		return;
+	}
 
 	DPRINTF(parent?E_INFO:E_WARN, L_SCANNER, _("Scanning %s\n"), dir);
 	switch( dir_types )
@@ -880,6 +894,12 @@ cb_orphans(void *args, int argc, char **argv, char **azColName)
 			monitor_remove_file(path);
 		else
 			monitor_remove_directory(0, path);
+	}
+
+    if ( !mime && has_nomedia(path) ) 
+	{
+		DPRINTF(E_WARN, L_SCANNER, "Removing %s [.nomedia file found]\n", path);
+		monitor_remove_directory(0, path);
 	}
 
 	return 0;
