@@ -26,7 +26,7 @@ m4_ifdef([AC_USE_SYSTEM_EXTENSIONS], [AC_USE_SYSTEM_EXTENSIONS])
 
 #MiniDLNA
 
-AM_ICONV
+AM_ICONV 
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION(0.19)
 
@@ -449,6 +449,9 @@ if test x"$ac_cv_lib_avformat__lavcodec__lavutil___avformat_open_input" != x"yes
 fi
 AC_SUBST(LIBAVFORMAT_LIBS)
 
+# Workaround non-working AM_ICONV 
+AC_CHECK_LIB([iconv], [libiconv_open], [LIBICONV="-liconv"])
+AC_SUBST(LIBICONV)
 
 AC_CHECK_LIB(pthread, pthread_create)
 
