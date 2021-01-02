@@ -515,6 +515,13 @@ monitor_insert_directory(int fd, char *name, const char * path)
 		DPRINTF(E_WARN, L_INOTIFY, "Could not access %s [%s]\n", path, strerror(errno));
 		return -1;
 	}
+
+	if (has_nomedia(path)) 
+	{
+		DPRINTF(E_WARN, L_INOTIFY, "Skiping %s [.nomedia file found]\n", path);
+		return -1;
+	}
+
 	if( sql_get_int_field(db, "SELECT ID from DETAILS where PATH = '%q'", path) > 0 )
 	{
 		fd = 0;

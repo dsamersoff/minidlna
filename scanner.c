@@ -762,14 +762,6 @@ filter_avp(scan_filter *d)
 		);
 }
 
-static int 
-has_nomedia(const char *dir) {
-    // Don't process folders containing .nomedia file. 
-	char full_path[PATH_MAX];
-	snprintf(full_path, PATH_MAX, "%s/.nomedia", dir);
-    return (access (full_path, F_OK) == 0);
-}
-
 static void
 ScanDirectory(const char *dir, const char *parent, media_types dir_types)
 {
@@ -779,12 +771,6 @@ ScanDirectory(const char *dir, const char *parent, media_types dir_types)
 	char *name = NULL;
 	static long long unsigned int fileno = 0;
 	enum file_types type;
-
-    if ( has_nomedia(dir) ) 
-	{
-		DPRINTF(E_WARN, L_SCANNER, "Skipping %s [.nomedia file found]\n", dir);
-		return;
-	}
 
 	DPRINTF(parent?E_INFO:E_WARN, L_SCANNER, _("Scanning %s\n"), dir);
 	switch( dir_types )
@@ -857,12 +843,19 @@ ScanDirectory(const char *dir, const char *parent, media_types dir_types)
 		}
 		if( (type == TYPE_DIR) && (access(full_path, R_OK|X_OK) == 0) )
 		{
-			char *parent_id;
-			insert_directory(name, full_path, BROWSEDIR_ID, THISORNUL(parent), i+startID);
-			xasprintf(&parent_id, "%s$%X", THISORNUL(parent), i+startID);
-			ScanDirectory(full_path, parent_id, dir_types);
-			free(parent_id);
-		}
+           if ( has_nomedia(dir) ) 
+	       {
+		        DPRINTF(E_WARN, L_SCANNER, "Skipping %s [.nomedia file found]\n", dir);
+	       }
+		   else
+		   {
+				char *parent_id;
+				insert_directory(name, full_path, BROWSEDIR_ID, THISORNUL(parent), i+startID);
+				xasprintf(&parent_id, "%s$%X", THISORNUL(parent), i+startID);
+				ScanDirectory(full_path, parent_id, dir_types);
+				free(parent_id);
+		   }
+	    }
 		else if( type == TYPE_FILE && (access(full_path, R_OK) == 0) )
 		{
 			if( insert_file(name, full_path, THISORNUL(parent), i+startID, dir_types) == 0 )

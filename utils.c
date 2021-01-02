@@ -536,6 +536,18 @@ valid_media_types(const char *path)
 }
 
 /*
+ * Check if folder contains .nomedia file, with intention
+ * to exclude this folder from further processing
+ */
+
+int 
+has_nomedia(const char *dir) {
+	char full_path[PATH_MAX];
+	snprintf(full_path, PATH_MAX, "%s/.nomedia", dir);
+    return (access (full_path, F_OK) == 0);
+}
+
+/*
  * Add and subtract routines for timevals.
  * N.B.: subtract routine doesn't deal with
  * results which are before the beginning,

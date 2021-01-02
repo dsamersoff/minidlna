@@ -98,6 +98,7 @@ int resolve_unknown_type(const char * path, media_types dir_type);
 const char *mime_to_ext(const char * mime);
 
 /* Others */
+int has_nomedia(const char *dir);
 int make_dir(char * path, mode_t mode);
 unsigned int DJBHash(uint8_t *data, int len);
 
